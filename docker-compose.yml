@@ -1,0 +1,40 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  mysql_db:
+    image: mysql:5.7
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: your_database
+      MYSQL_USER: your_user
+      MYSQL_PASSWORD: your_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./php/database.sql:/docker-entrypoint-initdb.d/database.sql
+    ports:
+      - "3306:3306"
+
+  php_app:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: php_app
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql_db
+
+  android_vnc:
+    build:
+      context: ./android
+      dockerfile: Dockerfile
+    container_name: android_vnc
+    ports:
+      - "5901:5900"  # Map VNC to host port
+    environment:
+      - DISPLAY=:1
+
+volumes:
+  mysql_data:
